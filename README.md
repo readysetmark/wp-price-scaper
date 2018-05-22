@@ -1,1 +1,3 @@
-# wp-price-scaper
+# Wealth Pulse Price Scraper
+
+Google Finance shut down so need an alternative...

@@ -1,0 +1,24 @@
+{
+  "name": "wealthpulse-price-scaper",
+  "version": "0.1.0",
+  "description": "WealthPulse Price Scraper",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/readysetmark/wp-price-scaper.git"
+  },
+  "author": "Mark Williams",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/readysetmark/wp-price-scaper/issues"
+  },
+  "homepage": "https://github.com/readysetmark/wp-price-scaper#readme",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "moment": "^2.22.1",
+    "numeral": "^2.0.6"
+  }
+}
