@@ -29,10 +29,11 @@ Promise.all([
 });
 
 
-function getPricesForSymbol(symbol, code) {
+async function getPricesForSymbol(symbol, code) {
     const url = "https://ycharts.com/charts/fund_data.json?securities=id%3AM%3A" + code 
         + "%2Cinclude%3Atrue%2C%2C&calcs=id%3Aprice%2Cinclude%3Atrue%2C%2C&correlations=&format=real&recessions=false&zoom=5&startDate=&endDate=&chartView=&splitType=&scaleType=&note=&title=&source=&units=&quoteLegend=&partner=&quotes=&legendOnChart=&securitylistSecurityId=&clientGroupLogoUrl=&displayTicker=&ychartsLogo=&useEstimates=";
-    return axios.get(url).then(response => { return [symbol, response.data.chart_data[0][0].raw_data]; });
+    const response = await axios.get(url);
+    return [symbol, response.data.chart_data[0][0].raw_data];
 }
 
 
