@@ -23,4 +23,31 @@ module.exports = {
             });
         });
     },
+
+    write: function (priceDbFilePath, symbols, priceSymbolMap) {
+        return new Promise((resolve, reject) => {
+            const tempFilePath = priceDbFilePath + "_temp";
+            const outFS = fs.createWriteStream(tempFilePath);
+
+            symbols.forEach(s => {
+                priceSymbolMap.get(s).forEach(p => {
+                    outFS.write(p.priceLine + '\r\n');
+                });
+            });
+
+            outFS.end();
+
+            outFS.on('error', error => {
+                reject(error);
+            });
+
+            outFS.on('close', () => {
+                if (fs.existsSync(priceDbFilePath)){
+                    fs.unlinkSync(priceDbFilePath);
+                }
+                fs.renameSync(tempFilePath, priceDbFilePath);
+                resolve();
+            })
+        });
+    }
 }

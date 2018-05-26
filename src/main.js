@@ -24,9 +24,15 @@ updatePriceDb(process.env.WEALTH_PULSE_PRICES_FILE, symbols)
 
 
 async function updatePriceDb(priceDbFilePath, symbols) {
+    // read currently stored prices from pricedb file
+    console.log(`Reading prices from '${priceDbFilePath}'.`);
     const priceDb = await pricedb.read(priceDbFilePath);
+    console.log(`Read ${priceDb.size} prices.`);
+
+    // retrieve new prices from ycharts
     const newPrices = await Promise.all(
         symbols.map(s => {
+            console.log(`Retrieving prices for symbol '${s.symbol}'.`);
             return getPricesForSymbol(s.symbol, s.ychartsCode);
         })
     );
@@ -35,16 +41,19 @@ async function updatePriceDb(priceDbFilePath, symbols) {
     newPrices.forEach(pricesList => {
         pricesList.forEach(price => {
             if (!priceDb.has(price)) {
+                console.log(`Adding price: ${price}`);
                 priceDb.add(price);
             }
         });
     });
 
+    // parse out date and symbol so we can sort on those elements
     const prices = [];
     for(let p of priceDb.values()) {
         prices.push(parseSortablePrice(p));
     }
 
+    // Sort all prices by date ...
     prices.sort((a, b) => {
         if (a.date.isBefore(b.date)) {
             return -1;
@@ -55,6 +64,7 @@ async function updatePriceDb(priceDbFilePath, symbols) {
         return 0;
     });
 
+    // ... then group by symbol (still sorted by date though)
     const priceSymbols = [];
     const priceSymbolMap = new Map();
     prices.forEach(p => {
@@ -67,13 +77,12 @@ async function updatePriceDb(priceDbFilePath, symbols) {
         }
     });
 
+    // Sort by symbol
     priceSymbols.sort();
 
-    priceSymbols.forEach(s => {
-        priceSymbolMap.get(s).forEach(p => {
-            console.log(p.priceLine);
-        });
-    });
+    // prices sorted by symbol, then date
+    await pricedb.write(priceDbFilePath, priceSymbols, priceSymbolMap);
+    console.log(`Wrote prices to '${priceDbFilePath}'.`);
 
     return true;
 }
