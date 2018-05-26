@@ -1,39 +1,61 @@
 const axios = require('axios');
 const moment = require('moment');
 const numeral = require('numeral');
+const pricedb = require('./pricedb');
 
 
 // Load .pricedb file
-// remove duplicates (one time thing)
 // merge data from ycharts
+// sort by symbol, then by date
+// write to new file
 
-Promise.all([
-    getPricesForSymbol("TDB900", "TDB900.TO"),
-    getPricesForSymbol("TDB902", "TDB902.TO"),
-    getPricesForSymbol("TDB909", "TDB909.TO"),
-    getPricesForSymbol("TDB911", "TDB911.TO")
-])
-.then(responses => {
-    responses.forEach(element => {
-        //console.log(element);
-        element[1]
-        .map(toPriceRecord(element[0]))
-        .forEach(price => {
-            console.log(price);
+const symbols = [
+    { symbol: "TDB900", ychartsCode: "TDB900.TO" },
+    { symbol: "TDB902", ychartsCode: "TDB902.TO" },
+    { symbol: "TDB909", ychartsCode: "TDB909.TO" },
+    { symbol: "TDB911", ychartsCode: "TDB911.TO" },
+];
+
+updatePriceDb(process.env.WEALTH_PULSE_PRICES_FILE, symbols)
+.then(r => {
+    console.log("SUCCESS");
+})
+.catch(e => {
+    console.log("ERROR:");
+    console.log(e.message);
+})
+
+
+async function updatePriceDb(priceDbFilePath, symbols) {
+    const priceDb = await pricedb.read(priceDbFilePath);
+    const newPrices = await Promise.all(
+        symbols.map(s => {
+            return getPricesForSymbol(s.symbol, s.ychartsCode);
+        })
+    );
+
+    // add any new prices to priceDb
+    newPrices.forEach(pricesList => {
+        pricesList.forEach(price => {
+            if (!priceDb.has(price)) {
+                priceDb.add(price);
+            }
         });
     });
-})
-.catch(error => {
-    console.log(error);
-    console.log('There was an error!');
-});
+
+    for(let p of priceDb.values()) {
+        console.log(p);
+    }
+
+    return true;
+}
 
 
 async function getPricesForSymbol(symbol, code) {
     const url = "https://ycharts.com/charts/fund_data.json?securities=id%3AM%3A" + code 
         + "%2Cinclude%3Atrue%2C%2C&calcs=id%3Aprice%2Cinclude%3Atrue%2C%2C&correlations=&format=real&recessions=false&zoom=5&startDate=&endDate=&chartView=&splitType=&scaleType=&note=&title=&source=&units=&quoteLegend=&partner=&quotes=&legendOnChart=&securitylistSecurityId=&clientGroupLogoUrl=&displayTicker=&ychartsLogo=&useEstimates=";
     const response = await axios.get(url);
-    return [symbol, response.data.chart_data[0][0].raw_data];
+    return response.data.chart_data[0][0].raw_data.map(toPriceRecord(symbol));
 }
 
 
