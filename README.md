@@ -16,4 +16,15 @@ the Wealthpulse `.pricedb` file is located.
 
 * Run the scraper app with:
 
-    node src\main.js
+        node src/main.js
+
+
+# Binary Packaging
+
+* Ensure `pkg` is installed with:
+
+        npm install -g pkg
+
+* Create binaries for all platforms based on current node version:
+
+        pkg src/main.js
