@@ -1,6 +1,6 @@
 {
   "name": "wealthpulse-price-scaper",
-  "version": "0.1.0",
+  "version": "0.5.0",
   "description": "WealthPulse Price Scraper",
   "main": "src/main.js",
   "scripts": {
